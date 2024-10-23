@@ -36,7 +36,17 @@
    - 审稿特约费用记录
    - 学生助理费用记录
 
+9. AI 聊天助手
+   - 基于星火 API 的智能对话功能
+
 ## 更新记录
+
+### 版本 1.1.0 (2024-xx-xx)
+
+- 添加了 AI 聊天助手功能
+- 优化了版面费管理模块
+- 改进了稿费爬虫功能
+- 增强了用户界面交互体验
 
 ### 版本 1.0.0 (2023-xx-xx)
 
@@ -54,13 +64,14 @@
 - 后端：Python, Flask
 - 数据处理：Pandas, Openpyxl
 - 数据库：SQLite（用于稿费爬虫数据存储）
+- AI 对话：星火 API
 
 ## 安装和运行
 
 1. 克隆项目仓库
 2. 安装依赖：`pip install -r requirements.txt`
 3. 运行后端服务器：`python backend/main.py`
-4. 在浏览器中访问：`http://localhost:5000`
+4. 在浏览器中访问：`http://localhost:5005`
 
 ## 常用命令
 
@@ -69,5 +80,29 @@
 
 ## 项目结构
 
+- `frontend/`: 前端文件
+  - `index.html`: 主页面
+  - `styles.css`: 样式文件
+  - `script.js`: 前端脚本
+- `backend/`: 后端文件
+  - `main.py`: 主应用程序
+  - `data_processing.py`: 数据处理模块
+  - `database.py`: 数据库操作
+  - `webpq.py`: 稿费爬虫模块
+  - `spark_chat_interactive.py`: AI 聊天模块
+- `data/`: 数据文件
+- `output/`: 输出文件
 
-完成了 API 的接入测试，星火 API 测试正常
+## 注意事项
+
+- 确保正确配置了所有必要的文件路径
+- 使用前请仔细阅读使用说明
+- 定期备份重要数据
+
+## 贡献
+
+欢迎提交问题报告和改进建议。如果您想为项目做出贡献，请遵循标准的 Git 工作流程。
+
+## 许可证
+
+本项目采用 MIT 许可证。详情请参阅 LICENSE 文件。
