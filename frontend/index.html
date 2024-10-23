@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 江南大学食品与生物技术学报</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="icon" href="data:,">  <!-- 这会阻止浏览器请求默认的 favicon -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>📖 学报编辑部财务统计管理</h1>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="输入搜索内容...">
+                <select id="search-type">
+                    <option value="employee">👤 职工查询</option>
+                    <option value="id">🔢 工号查询</option>
+                    <option value="manuscript">📝 审稿查询</option>
+                </select>
+                <button id="search-button">搜索</button>
+            </div>
+            <div class="header-links">
+                <a href="https://mail.jiangnan.edu.cn/" target="_blank" class="header-button"><span>📧</span>邮件</a>
+                <a href="http://172.18.7.8/WFManager/login.jsp" target="_blank" class="header-button"><span>🏫</span>财务</a>
+                <a href="http://spyswjs.cnjournals.com/spyswjs/editor/login" target="_blank" class="header-button"><span>📰</span>编辑</a>
+            </div>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a class="nav-link" data-target="home">主页</a></li>
+            <li><a class="nav-link" data-target="page-fee">版面费</a></li>
+            <li><a class="nav-link" data-target="manuscript-fee">稿费</a></li>
+            <li><a class="nav-link" data-target="review-fee">审稿费</a></li>
+        </ul>
+    </nav>
+    <main>
+        <div id="home" class="page active">
+            <h2>🏠 主页概览</h2>
+            <div class="grid-container">
+                <div class="grid-item">
+                    <h3>📝 Todo list</h3>
+                    <div class="task-input-container">
+                        <input type="text" id="task-input" placeholder="添加任务">
+                        <button id="add-task">+</button>
+                    </div>
+                    <ul id="task-list"></ul>
+                </div>
+                <div class="grid-item">
+                    <h3>💼 快捷操作</h3>
+                    <button id="open-folder-btn" class="action-button" onclick="openFolder()">
+                        <span class="emoji">📂</span> 打开工作文件夹
+                    </button>
+                </div>
+                <div class="grid-item">
+                    <h3>💰 每月固定费用</h3>
+                    <div class="expense-container">
+                        <div class="expense-section">
+                            <h4>审稿特约费用</h4>
+                            <div id="special-expense-note" class="expense-note" contenteditable="true">
+                                在这里记录特约费用...
+                            </div>
+                        </div>
+                        <div class="expense-section">
+                            <h4>学生助理费用</h4>
+                            <div id="assistant-expense-note" class="expense-note" contenteditable="true">
+                                在这里记录学生助理费用...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 添加更多主页卡片 -->
+            </div>
+        </div>
+        <div id="page-fee" class="page">
+            <h2>💰 版面费管理</h2>
+            <div id="page-fee-content"></div>
+        </div>
+        <div id="manuscript-fee" class="page">
+            <h2>✍️ 作者稿费结算</h2>
+            <div class="grid-container">
+                <div class="grid-item">
+                    <h3>稿费爬虫</h3>
+                    <form id="scraping-form">
+                        <input type="number" id="year-input" placeholder="年份" required>
+                        <input type="number" id="issue-input" placeholder="期数" required>
+                        <button type="submit">开始爬取</button>
+                    </form>
+                    <div id="scraping-result" class="scraping-result"></div>
+                </div>
+                <div class="grid-item">
+                    <h3>📝 稿费记事本</h3>
+                    <div class="expense-container manuscript-fee-note">
+                        <div class="expense-section">
+                            <h4>待处理记账期数</h4>
+                            <div id="manuscript-fee-pending" class="expense-note" contenteditable="true">
+                                在这里记录待处理记账期数...
+                            </div>
+                        </div>
+                        <div class="expense-section">
+                            <h4>待报销期数</h4>
+                            <div id="manuscript-fee-reimbursement" class="expense-note" contenteditable="true">
+                                在这里记录待报销期数...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="review-fee" class="page">
+            <h2>📉 审稿专家费统计</h2>
+            <div class="grid-container">
+                <div class="grid-item">
+                    <h3>⚙️ 评审复审统计</h3>
+                    <div class="review-controls">
+                        <input type="month" id="month-input" class="date-input">
+                        <button id="process-button">开始处理</button>
+                    </div>
+                    <div id="review-result"></div>
+                </div>
+                <div class="grid-item">
+                    <h3>📝 审稿费记事本</h3>
+                    <div class="expense-container review-fee-note">
+                        <div class="expense-section">
+                            <h4>已记账月份</h4>
+                            <div id="review-fee-processed" class="expense-note" contenteditable="true">
+                                在这里记录已记账月份...
+                            </div>
+                        </div>
+                        <div class="expense-section">
+                            <h4>待报销月份</h4>
+                            <div id="review-fee-reimbursement" class="expense-note" contenteditable="true">
+                                在这里记录待报销月份...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="chat-container">
+            <h3>AI 助手</h3>
+            <div id="chat-messages"></div>
+            <div id="chat-input-area">
+                <input type="text" id="user-input" placeholder="输入您的问题...">
+                <button id="send-message">发送</button>
+            </div>
+        </div>
+    </main>
+    <div id="search-result"></div>
+    <script src="script.js"></script>
+</body>
+</html>
