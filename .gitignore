@@ -21,3 +21,5 @@ venv/
 # 数据库文件
 *.db
 journal_articles.db
+# 日志目录
+logs/
