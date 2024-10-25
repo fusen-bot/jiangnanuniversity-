@@ -1,6 +1,23 @@
-.DS_Store
+# 排除的目录
+downloads/
+output/
+processed/
+data/
+
+# Python 相关
 __pycache__/
 *.pyc
-.env
+*.pyo
+*.pyd
+.Python
 venv/
+.env
+
+# 系统文件
+.DS_Store
 .idea/
+.vscode/
+
+# 数据库文件
+*.db
+journal_articles.db
