@@ -30,20 +30,50 @@ def load_employee_data(employee_file, retired_file):
     combined_df['工号'] = pd.to_numeric(combined_df['工号'], errors='coerce').fillna(0).astype(int)
     return combined_df
 
-def query_by_employee_id(employee_data, employee_id):
-    employee_id = int(employee_id)  # 确保工号是整数
-    result = employee_data[employee_data['工号'] == employee_id]
-    if result.empty:
-        print(f"未找到工号为 {employee_id} 的员工")
+def query_by_employee_id(employee_data, employee_id_str):
+    # 处理多个工号查询
+    employee_ids = [id.strip() for id in employee_id_str.split('、')]
+    all_results = pd.DataFrame()
+    
+    for emp_id in employee_ids:
+        try:
+            emp_id = int(emp_id)  # 确保工号是整数
+            result = employee_data[employee_data['工号'] == emp_id]
+            all_results = pd.concat([all_results, result])
+        except ValueError:
+            print(f"警告：无效的工号格式 '{emp_id}'")
+    
+    if all_results.empty:
+        print(f"未找到工号为 {employee_id_str} 的员工")
     else:
-        print(result[['姓名', '工号', '部门']].to_string(index=False, float_format='{:.0f}'.format))
+        # 检查是否有重复工号
+        if len(all_results) > len(employee_ids):
+            print("注意：某些工号对应多个员工记录")
+        print("\n查询结果：")
+        print(all_results[['姓名', '工号', '部门']].to_string(index=False, float_format='{:.0f}'.format))
 
-def query_by_name(employee_data, name):
-    result = employee_data[employee_data['姓名'] == name]
-    if result.empty:
-        print(f"未找到姓名为 {name} 的员工")
+def query_by_name(employee_data, name_str):
+    # 处理多个姓名查询
+    names = [name.strip() for name in name_str.split('、')]
+    all_results = pd.DataFrame()
+    
+    for name in names:
+        result = employee_data[employee_data['姓名'] == name]
+        all_results = pd.concat([all_results, result])
+    
+    if all_results.empty:
+        print(f"未找到姓名为 {name_str} 的员工")
     else:
-        print(result[['姓名', '工号', '部门']].to_string(index=False, float_format='{:.0f}'.format))
+        # 检查是否有重名情况
+        name_counts = all_results['姓名'].value_counts()
+        duplicate_names = name_counts[name_counts > 1]
+        if not duplicate_names.empty:
+            print("\n注意：以下姓名存在多条记录：")
+            for name, count in duplicate_names.items():
+                print(f"- {name}: {count}条记录")
+        
+        print("\n查询结果：")
+        print(all_results[['姓名', '工号', '部门']].to_string(index=False, float_format='{:.0f}'.format))
 
 
 
@@ -68,7 +98,7 @@ def match_employee_id(name, employee_df):
 
 def get_target_month():
     """
-    获取用户输入的目标月份，并转换为 YYYY-MM 格式
+    获取用户输入的目标月份，并转换 YYYY-MM 格式
     """
     while True:
         month_input = input("请输入目标月份（1-12）: ")
@@ -127,7 +157,7 @@ def process_review_data(review_file, re_review_file, employee_file, retired_file
             current_month = row['审回时间'].strftime('%Y-%m')
             review_df.loc[mask, '复审月份'] += f"{current_month}," if review_df.loc[mask, '复审月份'].values[0] else current_month
         else:
-            print(f"警告：复审记录无��配的评审记录 - 稿件编号: {row['稿件编号']}")
+            print(f"警告：复审记录无配的评审记录 - 稿件编号: {row['稿件编号']}")
 
     #复审无匹配统计待增加
     
@@ -197,37 +227,32 @@ def highlight_cells(worksheet, column, condition_column, condition_value, color)
         if worksheet[condition_column + str(cell.row)].value == condition_value:
             cell.fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
 
-def save_to_excel(df, output_file):
-    df.to_excel(output_file, index=False)
-    workbook = load_workbook(output_file)
-    worksheet = workbook.active
-
-    # 设置复审行的背景色为浅绿色
-    light_green_fill = PatternFill(start_color="E6FFE6", end_color="E6FFE6", fill_type="solid")
-    red_font = Font(color="FF0000")
-
-    for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
-        # 设置复审行的背景色为浅绿色
-        if row[df.columns.get_loc('复审')].value:
-            for cell in row:
-                cell.fill = light_green_fill
+def save_to_excel(data, target_month):
+    """保存数据到Excel文件并在数据下方添加统计报表"""
+    output_file = os.path.join(OUTPUT_PATH, f'review_fee_{target_month}.xlsx')
+    
+    # 创建DataFrame并保存到Excel
+    df = pd.DataFrame(data)
+    
+    # 创建ExcelWriter对象
+    with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+        # 写入主数据
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
         
-        # 标记未找到的校内人员为红色
-        if row[df.columns.get_loc('校内人员')].value and row[df.columns.get_loc('人员状态')].value == 'not_found':
-            for cell in row:
-                cell.font = red_font
+        # 获取工作簿和工作表对象
+        workbook = writer.book
+        worksheet = writer.sheets['Sheet1']
         
-        # 标记缺失银行账户信息的校外人员为红色
-        elif not row[df.columns.get_loc('校内人员')].value and row[df.columns.get_loc('银行账户缺失')].value:
-            for cell in row:
-                cell.font = red_font
-
-    # 添加详细的统计信息
-    add_detailed_statistics(worksheet, df)
-
-    workbook.save(output_file)
+        # 获取数据最后一行的位置
+        last_row = len(df) + 2  # 加2是因为标题行和从1开始计数
+        
+        # 在数据下方添加统计报表
+        add_detailed_statistics(worksheet, df)
+    
+    return output_file
 
 def add_detailed_statistics(worksheet, df):
+    """生成简化版审稿费统计报表"""
     bold_font = Font(bold=True)
     last_row = worksheet.max_row + 2
 
@@ -238,93 +263,76 @@ def add_detailed_statistics(worksheet, df):
     # 校内在职专家统计
     worksheet.cell(row=last_row, column=1, value="校内在职专家").font = bold_font
     worksheet.cell(row=last_row, column=2, value="工号").font = bold_font
-    worksheet.cell(row=last_row, column=3, value="审稿费用").font = bold_font
+    worksheet.cell(row=last_row, column=3, value="金额").font = bold_font
     last_row += 1
 
-    internal_active_experts = df[(df['校内人员']) & (df['人员状态'] == 'active')].groupby(['审稿人姓名', '工号'])['审稿费用'].sum().reset_index()
-    internal_active_experts = internal_active_experts.sort_values('审稿费用', ascending=False)
+    internal_active = df[(df['校内人员']) & (df['人员状态'] == 'active')]
+    internal_active_grouped = internal_active.groupby(['审稿人姓名', '工号'])['审稿费金额'].sum().reset_index()
+    internal_active_grouped = internal_active_grouped.sort_values('审稿费金额', ascending=False)
 
-    for _, expert in internal_active_experts.iterrows():
-        worksheet.cell(row=last_row, column=1, value=expert['审稿人姓名'])
-        worksheet.cell(row=last_row, column=2, value=expert['工号'])
-        worksheet.cell(row=last_row, column=3, value=expert['审稿费用'])
+    for _, row in internal_active_grouped.iterrows():
+        worksheet.cell(row=last_row, column=1, value=row['审稿人姓名'])
+        worksheet.cell(row=last_row, column=2, value=row['工号'])
+        worksheet.cell(row=last_row, column=3, value=row['审稿费金额'])
         last_row += 1
 
     # 校内在职总金额
     worksheet.cell(row=last_row, column=1, value="校内在职总金额").font = bold_font
-    worksheet.cell(row=last_row, column=3, value=internal_active_experts['审稿费用'].sum()).font = bold_font
+    worksheet.cell(row=last_row, column=3, value=internal_active_grouped['审稿费金额'].sum()).font = bold_font
     last_row += 2
 
     # 校内退休专家统计
     worksheet.cell(row=last_row, column=1, value="校内退休专家").font = bold_font
     worksheet.cell(row=last_row, column=2, value="工号").font = bold_font
-    worksheet.cell(row=last_row, column=3, value="审稿费用").font = bold_font
+    worksheet.cell(row=last_row, column=3, value="金额").font = bold_font
     last_row += 1
 
-    internal_retired_experts = df[(df['校内人员']) & (df['人员状态'] == 'retired')].groupby(['审稿人姓名', '工号'])['审稿费用'].sum().reset_index()
-    internal_retired_experts = internal_retired_experts.sort_values('审稿费用', ascending=False)
+    internal_retired = df[(df['校内人员']) & (df['人员状态'] == 'retired')]
+    internal_retired_grouped = internal_retired.groupby(['审稿人姓名', '工号'])['审稿费金额'].sum().reset_index()
+    internal_retired_grouped = internal_retired_grouped.sort_values('审稿费金额', ascending=False)
 
-    for _, expert in internal_retired_experts.iterrows():
-        worksheet.cell(row=last_row, column=1, value=expert['审稿人姓名'])
-        worksheet.cell(row=last_row, column=2, value=expert['工号'])
-        worksheet.cell(row=last_row, column=3, value=expert['审稿费用'])
+    for _, row in internal_retired_grouped.iterrows():
+        worksheet.cell(row=last_row, column=1, value=row['审稿人姓名'])
+        worksheet.cell(row=last_row, column=2, value=row['工号'])
+        worksheet.cell(row=last_row, column=3, value=row['审稿费金额'])
         last_row += 1
 
     # 校内退休总金额
     worksheet.cell(row=last_row, column=1, value="校内退休总金额").font = bold_font
-    worksheet.cell(row=last_row, column=3, value=internal_retired_experts['审稿费用'].sum()).font = bold_font
+    worksheet.cell(row=last_row, column=3, value=internal_retired_grouped['审稿费金额'].sum()).font = bold_font
     last_row += 2
 
-    # 校内未找到专家统计
-    worksheet.cell(row=last_row, column=1, value="校内未找到专家").font = bold_font
-    worksheet.cell(row=last_row, column=2, value="审稿费用").font = bold_font
-    last_row += 1
-
-    internal_not_found_experts = df[(df['校内人员']) & (df['人员状态'] == 'not_found')].groupby('审稿人姓名')['审稿费用'].sum().reset_index()
-    internal_not_found_experts = internal_not_found_experts.sort_values('审稿费用', ascending=False)
-
-    for _, expert in internal_not_found_experts.iterrows():
-        worksheet.cell(row=last_row, column=1, value=expert['审稿人姓名'])
-        worksheet.cell(row=last_row, column=2, value=expert['审稿费用'])
-        last_row += 1
-
-    # 校内未找到总金额
-    worksheet.cell(row=last_row, column=1, value="校内未找到总金额").font = bold_font
-    worksheet.cell(row=last_row, column=2, value=internal_not_found_experts['���稿费用'].sum()).font = bold_font
-    last_row += 2
-
-     # 校外专家统计
+    # 校外专家统计
     worksheet.cell(row=last_row, column=1, value="校外专家").font = bold_font
     worksheet.cell(row=last_row, column=2, value="身份证号").font = bold_font
-    worksheet.cell(row=last_row, column=3, value="审稿费用").font = bold_font
+    worksheet.cell(row=last_row, column=3, value="金额").font = bold_font
     last_row += 1
 
-    # 修改分组方式，允许身份证号为空
-    external_experts = df[~df['校内人员']].groupby(['审稿人姓名', '审稿人身份证号'], dropna=False)['审稿费用'].sum().reset_index()
-    external_experts = external_experts.sort_values('审稿费用', ascending=False)
+    external = df[~df['校内人员']]
+    external_grouped = external.groupby(['审稿人姓名', '审稿人身份证号'])['审稿费金额'].sum().reset_index()
+    external_grouped = external_grouped.sort_values('审稿费金额', ascending=False)
 
-    for _, expert in external_experts.iterrows():
-        worksheet.cell(row=last_row, column=1, value=expert['审稿人姓名'])
-        worksheet.cell(row=last_row, column=2, value=expert['审稿人身份证号'] if pd.notna(expert['审稿人身份证号']) else '')
-        worksheet.cell(row=last_row, column=3, value=expert['审稿费用'])
+    for _, row in external_grouped.iterrows():
+        worksheet.cell(row=last_row, column=1, value=row['审稿人姓名'])
+        worksheet.cell(row=last_row, column=2, value=row['审稿人身份证号'] if pd.notna(row['审稿人身份证号']) else '')
+        worksheet.cell(row=last_row, column=3, value=row['审稿费金额'])
         last_row += 1
 
     # 校外总金额
     worksheet.cell(row=last_row, column=1, value="校外总金额").font = bold_font
-    worksheet.cell(row=last_row, column=3, value=external_experts['审稿费用'].sum()).font = bold_font
+    worksheet.cell(row=last_row, column=3, value=external_grouped['审稿费金额'].sum()).font = bold_font
     last_row += 2
 
-    # 在最后添加总计行
-    worksheet.cell(row=last_row, column=1, value="总审稿费合���").font = bold_font
-    total_fee = df['审稿费用'].sum()
-    worksheet.cell(row=last_row, column=2, value=total_fee).font = bold_font
+    # 总计
+    worksheet.cell(row=last_row, column=1, value="总计").font = bold_font
+    total = df['审稿费金额'].sum()
+    worksheet.cell(row=last_row, column=3, value=total).font = bold_font
 
-    # 格式化总计金额
-    worksheet.cell(row=last_row, column=2).number_format = '#,##0.00'
-
-    # 可选：添加一行描述
-    last_row += 1
-    worksheet.cell(row=last_row, column=1, value="（包括校内在职、退休、未找到和校外专家的所有审稿费）").font = Font(italic=True)
+    # 设置金额列的数字格式
+    for row in range(worksheet.max_row - worksheet.min_row + 1):
+        cell = worksheet.cell(row=row + 1, column=3)
+        if isinstance(cell.value, (int, float)):
+            cell.number_format = '#,##0.00'
 
 def query_by_manuscript_id_or_reviewer(review_file, re_review_file, query):
     review_df = read_excel(review_file)
@@ -351,8 +359,19 @@ def query_by_manuscript_id_or_reviewer(review_file, re_review_file, query):
     re_review_result = re_review_df[(re_review_df['稿件编号'] == query) | (re_review_df['审稿人姓名'] == query)]
     
     if not re_review_result.empty:
-        print("\n在复审表中��到以下记录：")
+        print("\n在复审表中到以下记录：")
         for _, row in re_review_result.iterrows():
             print(f"稿件编号: {row['稿件编号']}, 审稿人: {row['审稿人姓名']}, 审回时间: {row['审回时间'].strftime('%Y-%m-%d')}")
     else:
         print("在复审表中未找到相关记录")
+
+def process_and_save_data(review_file, re_review_file, employee_file, retired_file, target_month):
+    """处理数据并保存到Excel"""
+    # 处理数据
+    data = process_review_data(review_file, re_review_file, employee_file, retired_file, target_month)
+    if data is None:
+        return None
+    
+    # 保存到Excel并添加统计
+    output_file = save_to_excel(data, target_month)
+    return output_file

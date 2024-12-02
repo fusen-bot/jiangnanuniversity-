@@ -14,7 +14,11 @@ import subprocess
 import platform
 from spark_chat_interactive import SparkChatBot
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 app = Flask(__name__, static_folder='../frontend')
 
@@ -24,13 +28,32 @@ def index():
 
 # 设置文件路径
 base_path = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/data'
-review_file = os.path.join(base_path, '审稿费登记表.xls')
-re_review_file = os.path.join(base_path, '审稿费登记表 (1).xls')
-employee_file = os.path.join(base_path, 'employee_data.xlsx')
-retired_file = os.path.join(base_path, 'retired staff member.xlsx')
+logging.info(f"基础路径设置为: {base_path}")
 
-# 加载员工数据
-employee_data = load_employee_data(employee_file, retired_file)
+review_file = os.path.join(base_path, '评审.xls')
+re_review_file = os.path.join(base_path, '复审.xls')
+employee_file = os.path.join(base_path, '在职员工.xlsx')
+retired_file = os.path.join(base_path, '退休员工.xlsx')
+
+# 添加文件路径检查
+for file_path in [review_file, re_review_file, employee_file, retired_file]:
+    if os.path.exists(file_path):
+        logging.info(f"文件存在: {file_path}")
+    else:
+        logging.error(f"文件不存在: {file_path}")
+
+# 修改加载员工数据部分
+try:
+    logging.info("开始加载员工数据...")
+    employee_data = load_employee_data(employee_file, retired_file)
+    logging.info("员工数据加载成功")
+except FileNotFoundError as e:
+    logging.error(f"文件未找到: {str(e)}")
+    # 可以选择设置一个默认值或者抛出异常
+    employee_data = []
+except Exception as e:
+    logging.error(f"加载员工数据时发生未知错误: {str(e)}")
+    raise
 
 import numpy as np
 
@@ -38,7 +61,7 @@ import numpy as np
 OUTPUT_PATH = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/output'
 
 # 设置版面费Excel文件路径
-PAGE_FEE_FILE = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/data/WPS版面费同步/2024下.xlsx'
+PAGE_FEE_FILE = '/Users/changfusheng/Library/CloudStorage/OneDrive-个人/文档/2024下.xlsx'
 
 # 设置记事本数据文件路径
 NOTES_FILE = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/data/notes.json'
@@ -72,25 +95,28 @@ def process_review():
 def query_employee():
     employee_id = request.args.get('employee_id')
     name = request.args.get('name')
-    if employee_id:
-        try:
-            result = query_by_employee_id(employee_data, int(employee_id))
-        except ValueError:
-            return jsonify({"error": "无效的员工ID"}), 400
-    elif name:
-        result = query_by_name(employee_data, name)
-    else:
-        return jsonify({"error": "请提供员工ID或姓名"}), 400
     
-    if not result:
-        return jsonify({"error": "未找到匹配的员工信息"}), 404
-    
-    # 格式化结果
-    formatted_result = {
-        "type": "employee",
-        "data": result
-    }
-    return jsonify(formatted_result)
+    try:
+        if employee_id:
+            result = query_by_employee_id(employee_data, employee_id)
+        elif name:
+            result = query_by_name(employee_data, name)
+        else:
+            return jsonify({"error": "请提供员工ID或姓名"}), 400
+        
+        # 检查是否是错误消息
+        if isinstance(result, dict) and "message" in result:
+            return jsonify({"error": result["message"]}), 404
+            
+        # 确保返回格式统一
+        formatted_result = {
+            "type": "employee",
+            "data": result  # result 现在总是一个列表
+        }
+        return jsonify(formatted_result)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/query_manuscript', methods=['GET'])
 def query_manuscript():

@@ -159,11 +159,11 @@ async function handleProcessData() {
 
 async function handleSearch() {
     const searchType = document.getElementById('search-type').value;
-    const searchValue = document.getElementById('search-input').value;
+    const searchValue = document.getElementById('search-input').value.trim();
     const resultDiv = document.getElementById('search-result');
 
     if (!searchValue) {
-        resultDiv.innerHTML = '<p>请输入索内容😡😡😡</p>';
+        resultDiv.innerHTML = '<p>请输入搜索内容😡😡😡</p>';
         resultDiv.style.display = 'block';
         return;
     }
@@ -200,13 +200,18 @@ function displayFormattedResult(data) {
     resultDiv.innerHTML = '';
 
     if (data.type === 'employee') {
-        // 员工信息显示
-        const employeeInfo = data.data[0];
+        // 员工信息显示 - 支持多条结果
         resultDiv.innerHTML = `
             <h3>职工信息</h3>
-            <p><strong>姓名:</strong> ${employeeInfo.姓名}</p>
-            <p><strong>工号:</strong> ${employeeInfo.工号}</p>
-            <p><strong>部门:</strong> ${employeeInfo.部门}</p>
+            <div class="employee-results">
+                ${data.data.map(emp => `
+                    <div class="employee-card">
+                        <p><strong>姓名:</strong> ${emp.姓名}</p>
+                        <p><strong>工号:</strong> ${emp.工号}</p>
+                        <p><strong>部门:</strong> ${emp.部门}</p>
+                    </div>
+                `).join('')}
+            </div>
             <button onclick="closeSearchResult()">关闭</button>
         `;
     } else if (data.type === 'manuscript') {
@@ -215,7 +220,7 @@ function displayFormattedResult(data) {
             <h3>审稿信息</h3>
             <div class="manuscript-container">
                 <div class="manuscript-column">
-                    <h4>评记录</h4>
+                    <h4>评审记录</h4>
                     ${formatManuscriptData(data.data.review)}
                 </div>
                 <div class="manuscript-column">
