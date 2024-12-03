@@ -13,13 +13,13 @@
         <div class="header-content">
             <h1>📖 学报编辑部财务统计管理</h1>
             <div class="search-container">
-                <input type="text" id="search-input" placeholder="输入搜索内容...">
                 <select id="search-type">
-                    <option value="employee">👤 职工查询</option>
-                    <option value="id">🔢 工号查询</option>
-                    <option value="manuscript">📝 审稿查询</option>
+                    <option value="employee">职工</option>
+                    <option value="id">工号</option>
+                    <option value="manuscript">审稿</option>
                 </select>
-                <button id="search-button">搜索</button>
+                <input type="text" id="search-input" placeholder="请输入查询内容">
+                <button id="search-button">🔍</button>
             </div>
             <div class="header-links">
                 <a href="https://mail.jiangnan.edu.cn/" target="_blank" class="header-button"><span>📧</span>邮件</a>
@@ -52,6 +52,9 @@
                     <h3>💼 快捷操作</h3>
                     <button id="open-folder-btn" class="action-button" onclick="openFolder()">
                         <span class="emoji">📂</span> 打开工作文件夹
+                    </button>
+                    <button id="open-program-folder-btn" class="action-button" onclick="openProgramFolder()">
+                        <span class="emoji">📂</span> 打开程序文件夹
                     </button>
                 </div>
                 <div class="grid-item">

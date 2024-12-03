@@ -165,6 +165,10 @@ async function handleSearch() {
     if (!searchValue) {
         resultDiv.innerHTML = '<p>请输入搜索内容😡😡😡</p>';
         resultDiv.style.display = 'block';
+        // 添加2秒后自动隐藏
+        setTimeout(() => {
+            resultDiv.style.display = 'none';
+        }, 2000);
         return;
     }
 
@@ -202,33 +206,37 @@ function displayFormattedResult(data) {
     if (data.type === 'employee') {
         // 员工信息显示 - 支持多条结果
         resultDiv.innerHTML = `
-            <h3>职工信息</h3>
-            <div class="employee-results">
-                ${data.data.map(emp => `
-                    <div class="employee-card">
-                        <p><strong>姓名:</strong> ${emp.姓名}</p>
-                        <p><strong>工号:</strong> ${emp.工号}</p>
-                        <p><strong>部门:</strong> ${emp.部门}</p>
-                    </div>
-                `).join('')}
+            <div class="result-container">
+                <button class="close-button" onclick="closeSearchResult()">×</button>
+                <h3>职工信息</h3>
+                <div class="employee-results">
+                    ${data.data.map(emp => `
+                        <div class="employee-card">
+                            <p><strong>姓名:</strong> ${emp.姓名}</p>
+                            <p><strong>工号:</strong> ${emp.工号}</p>
+                            <p><strong>部门:</strong> ${emp.部门}</p>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-            <button onclick="closeSearchResult()">关闭</button>
         `;
     } else if (data.type === 'manuscript') {
         // 审稿信息显示
         resultDiv.innerHTML = `
-            <h3>审稿信息</h3>
-            <div class="manuscript-container">
-                <div class="manuscript-column">
-                    <h4>评审记录</h4>
-                    ${formatManuscriptData(data.data.review)}
-                </div>
-                <div class="manuscript-column">
-                    <h4>复审记录</h4>
-                    ${formatManuscriptData(data.data.re_review)}
+            <div class="result-container">
+                <button class="close-button" onclick="closeSearchResult()">×</button>
+                <h3>审稿信息</h3>
+                <div class="manuscript-container">
+                    <div class="manuscript-column">
+                        <h4>评审记录</h4>
+                        ${formatManuscriptData(data.data.review)}
+                    </div>
+                    <div class="manuscript-column">
+                        <h4>复审记录</h4>
+                        ${formatManuscriptData(data.data.re_review)}
+                    </div>
                 </div>
             </div>
-            <button onclick="closeSearchResult()">关闭</button>
         `;
     } else {
         resultDiv.innerHTML = '<p>未知的数据类型</p>';
@@ -317,8 +325,8 @@ function renderTasks() {
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <span class="task-text">${task.text}</span>
             <div class="task-actions">
-                <button class="star-task" onclick="toggleStar(${task.id})">${task.starred ? '★' : '☆'}</button>
-                <button class="delete-task" onclick="deleteTask(${task.id})">🗑️</button>
+                <button class="star-task" onclick="toggleStar(${task.id})">${task.starred ? '⭐️' : '☆'}</button>
+                <button class="delete-task" onclick="deleteTask(${task.id})">-</button>
             </div>
         `;
         taskList.appendChild(li);
@@ -715,4 +723,33 @@ function initAIChat() {
 
 // 在文档加载完成后初始化AI聊天功能
 document.addEventListener('DOMContentLoaded', initAIChat);
+
+function openProgramFolder() {
+    const button = document.getElementById('open-program-folder-btn');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="emoji">⏳</span> 正在打开...';
+    button.disabled = true;
+
+    fetch('/open_program_folder')
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                button.innerHTML = '<span class="emoji">✅</span> ' + data.message;
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }, 2000);
+            } else if (data.error) {
+                alert('错误: ' + data.error);
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('发生错误,请查看控制台');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+}
 

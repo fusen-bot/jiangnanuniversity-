@@ -1,30 +1,33 @@
+/* 根变量：定义全局颜色主题 */
 :root {
-  --primary-color: #007aff;
-  --secondary-color: #5ac8fa;
-  --background-color: #f2f2f7;
-  --text-color: #1c1c1e;
-  --card-background: #ffffff;
+  --primary-color: #007aff;    /* 主要颜色：蓝色 */
+  --secondary-color: #5ac8fa;  /* 次要颜色：浅蓝色 */
+  --background-color: #f2f2f7; /* 背景颜色：浅灰色 */
+  --text-color: #1c1c1e;      /* 文本颜色：深灰色 */
+  --card-background: #ffffff;  /* 卡片背景：白色 */
 }
 
+/* 基础页面样式设置 */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;  /* 系统默认字体 */
+  line-height: 1.6;           /* 行高 */
   margin: 0;
   padding: 0;
   background-color: var(--background-color);
   color: var(--text-color);
-  transition: all 0.3s ease;
+  transition: all 0.3s ease;  /* 平滑过渡效果 */
 }
 
+/* 页头样式 */
 header {
   background-color: var(--primary-color);
   color: #fff;
   padding: 10px 20px;
-  position: fixed;
+  position: fixed;           /* 固定定位在顶部 */
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 1000;            /* 确保在其他元素之上 */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -41,6 +44,7 @@ header h1 {
   margin: 0;
 }
 
+/* 搜索相关样式 */
 .search-container {
   display: flex;
   align-items: center;
@@ -48,25 +52,44 @@ header h1 {
 }
 
 #search-input, #search-type, #search-button {
-  padding: 8px;
+  padding: 8px 12px;
   font-size: 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 20px;      /* 圆角边框 */
+  transition: all 0.3s ease;
 }
 
 #search-input {
   width: 200px;
-  margin-right: 5px;
+  margin-right: 8px;
+  border-radius: 0 20px 20px 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0);
+  text-align: center;
+  height: 36px;
+  box-sizing: border-box;
 }
 
 #search-type {
-  margin-right: 5px;
+  margin-right: 0;
+  border-radius: 20px 0 0 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0 12px;
 }
 
 #search-button {
-  background-color: var(--secondary-color);
   color: #fff;
   cursor: pointer;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+}
+
+#search-button:hover {
+  background-color: #4db8ea;
+  transform: translateY(-1px);
 }
 
 .header-links {
@@ -89,11 +112,62 @@ header h1 {
 }
 
 nav {
-  background-color: #fff;
-  padding: 10px 20px;
-  margin-top: 60px; /* 新增：与顶部保持距离 */
-  margin-bottom: 5px; /* 新增：与内容区域保持距离 */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: 
+    linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)),
+    repeating-linear-gradient(45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 122, 255, 0.03) 10px,
+      rgba(0, 122, 255, 0.03) 20px),
+    repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 10px,
+      rgba(92, 200, 250, 0.03) 10px,
+      rgba(92, 200, 250, 0.03) 20px);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 0 Q 50 100 100 0 T 200 0" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="5"/></svg>');
+  background-size: 200px 100px;
+  animation: wave 5s linear infinite;
+  padding: 15px 20px;
+  margin-top: 60px;
+  margin-bottom: 5px;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 添加一个微妙的光泽效果 */
+nav::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255,255,255,0.2) 0%,
+    rgba(255,255,255,0.1) 30%,
+    transparent 70%
+  );
+  opacity: 0.6;
+  animation: shine 10s linear infinite;
+}
+
+@keyframes shine {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 nav ul {
@@ -101,21 +175,60 @@ nav ul {
   padding: 0;
   margin: 0;
   display: flex;
-  gap: 20px;
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+nav ul li {
+  flex: 1;
+  text-align: center;
+  position: relative;
 }
 
 nav ul li a {
+  display: block;
   text-decoration: none;
   color: var(--text-color);
-  font-weight: bold;
-  padding: 5px 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
 }
 
-nav ul li a:hover, nav ul li a.active {
-  background-color: var(--secondary-color);
-  color: #fff;
+nav ul li a:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  color: white;
+  transform: translateY(-2px);
+}
+
+nav ul li a.active {
+  background: none;
+  color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(0, 122, 255, 0.1);
+  font-weight: bold;
+}
+
+nav ul li a::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+nav ul li a:hover::before {
+  width: 200px;
+  height: 200px;
 }
 
 main {
@@ -198,6 +311,22 @@ h3 {
   background-color: #f9f9f9;
   border-radius: 5px;
   margin-bottom: 10px;
+  justify-content: space-between;
+}
+
+.task-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 .task-checkbox {
@@ -205,7 +334,13 @@ h3 {
 }
 
 .task-text {
-  flex-grow: 1;
+  transition: all 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 新增：当复选框被选中时，为相关文本添加删除线 */
+.task-checkbox:checked + .task-text {
+  text-decoration: line-through;
+  color: #999; /* 可选：使已完成的任务文字颜色变浅 */
 }
 
 .delete-task {
@@ -214,6 +349,13 @@ h3 {
   color: #ff4d4d;
   cursor: pointer;
   font-size: 18px;
+  padding: 0 2px;
+}
+.star-task {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
 }
 
 .review-controls {
@@ -287,7 +429,7 @@ h3 {
 }
 
 .expense-container.manuscript-fee-note {
-    background-color: #e6f3ff; /* 浅蓝色背景 */
+    background-color: #e6f3ff; /* 浅蓝色背 */
 }
 
 .expense-container.review-fee-note {
@@ -322,9 +464,10 @@ h3 {
     color: #999;
 }
 
+/* 响应式布局设置 */
 @media (max-width: 768px) {
   .header-content {
-    flex-direction: column;
+    flex-direction: column;    /* 移动端垂直布局 */
     align-items: flex-start;
   }
 
@@ -333,8 +476,13 @@ h3 {
   }
 
   nav {
-    margin-top: 120px; /* 修改：适应移动端布局 */
-    margin-bottom: 20px; /* 新增：与内容区域保持距离 */
+    margin: 120px 10px 20px 10px;
+    padding: 10px;
+  }
+
+  nav ul li a {
+    padding: 10px 15px;
+    font-size: 0.9rem;
   }
 
   main {
@@ -358,8 +506,9 @@ h3 {
   }
 }
 
+/* 表格相关样式 */
 .table-container {
-    overflow-x: auto;
+    overflow-x: auto;         /* 允许横向滚动 */
     margin-top: 20px;
 }
 
@@ -377,7 +526,7 @@ h3 {
 
 #page-fee-table th {
     background-color: #f2f2f2;
-    position: sticky;
+    position: sticky;         /* 固定表头 */
     top: 0;
     z-index: 10;
 }
@@ -518,6 +667,11 @@ h3 {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin-bottom: 10px;
+}
+
+.action-button + .action-button {
+    margin-top: 10px;
 }
 
 .action-button:hover {
@@ -577,12 +731,12 @@ h3 {
 }
 
 .message.user {
-    background-color: #e6f3ff;
+    background-color: #e6f3ff;  /* 用户消息背景色 */
     text-align: right;
 }
 
 .message.ai {
-    background-color: #f0f0f0;
+    background-color: #f0f0f0;  /* AI消息背景色 */
 }
 
 .message.error {
@@ -608,3 +762,36 @@ h3 {
 .employee-card p {
     margin: 0.5rem 0;
 }
+
+.result-container {
+    position: relative;
+    padding: 20px;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 5px 10px;
+    line-height: 1;
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+/* 添加动画效果 */
+@keyframes wave {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+

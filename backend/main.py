@@ -27,7 +27,7 @@ def index():
     return send_from_directory(app.static_folder, 'index.html')
 
 # 设置文件路径
-base_path = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/data'
+base_path = '/Users/changfusheng/Desktop/学报/PY_AUTO/data'
 logging.info(f"基础路径设置为: {base_path}")
 
 review_file = os.path.join(base_path, '评审.xls')
@@ -58,13 +58,13 @@ except Exception as e:
 import numpy as np
 
 # 添加输出路径配置
-OUTPUT_PATH = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/output'
+OUTPUT_PATH = '/Users/changfusheng/Desktop/学报/PY_AUTO/output'
 
 # 设置版面费Excel文件路径
 PAGE_FEE_FILE = '/Users/changfusheng/Library/CloudStorage/OneDrive-个人/文档/2024下.xlsx'
 
 # 设置记事本数据文件路径
-NOTES_FILE = '/Users/changfusheng/Desktop/2024常福生/PY_AUTO/data/notes.json'
+NOTES_FILE = '/Users/changfusheng/Desktop/学报/PY_AUTO/data/notes.json'
 
 spark_chatbot = SparkChatBot()
 
@@ -280,7 +280,7 @@ def load_notes():
 
 @app.route('/open_folder', methods=['GET'])
 def open_folder():
-    folder_path = '/Users/changfusheng/Desktop/2024常福生'
+    folder_path = '/Users/changfusheng/Desktop/学报'
     try:
         if platform.system() == "Darwin":  # macOS
             subprocess.run(["open", folder_path])
@@ -308,6 +308,20 @@ def chat():
         error_message = f"聊天失败: {str(e)}"
         print(f"错误: {error_message}")
         return jsonify({"error": error_message}), 500
+
+@app.route('/open_program_folder', methods=['GET'])
+def open_program_folder():
+    folder_path = '/Users/changfusheng/Desktop/学报/PY_AUTO'
+    try:
+        if platform.system() == "Darwin":  # macOS
+            subprocess.run(["open", folder_path])
+        elif platform.system() == "Windows":
+            subprocess.run(["explorer", folder_path])
+        else:  # Linux或其他系统
+            subprocess.run(["xdg-open", folder_path])
+        return jsonify({"message": "程序文件夹已打开"}), 200
+    except Exception as e:
+        return jsonify({"error": f"无法打开程序文件夹: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5005)

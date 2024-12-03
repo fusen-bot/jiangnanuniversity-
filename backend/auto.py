@@ -5,6 +5,10 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Font
 import os
 
+# 添加输出路径定义
+OUTPUT_PATH = os.path.join(os.path.dirname(__file__), 'output')
+os.makedirs(OUTPUT_PATH, exist_ok=True)  # 确保输出目录存在
+
 def read_excel(data):
     """
     读取Excel文件，支持.xls和.xlsx格式
@@ -195,7 +199,7 @@ def process_review_data(review_file, re_review_file, employee_file, retired_file
 
     print("审稿数据列名:", review_df.columns.tolist())  # 保留这行来帮助调试
 
-    # 检查校外专家的银行账户信息
+    # 检查校外专家的银���账户信息
     review_df['银行账户缺失'] = False
     # 使用确切的列名
     bank_account_column = '银行账号'
