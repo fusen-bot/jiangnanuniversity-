@@ -78,7 +78,14 @@
             </div>
         </div>
         <div id="page-fee" class="page">
-            <h2>💰 版面费管理</h2>
+            <div class="page-header">
+                <h2>💰 版面费管理</h2>
+                <div class="doc-link-container">
+                    <a href="https://docs.qq.com/sheet/DRXNMVVViRHNvSWdQ?tab=000001" target="_blank" class="doc-link-button">
+                        <span class="emoji">📊</span> 腾讯文档
+                    </a>
+                </div>
+            </div>
             <div id="page-fee-content"></div>
         </div>
         <div id="manuscript-fee" class="page">
@@ -127,15 +134,15 @@
                     <h3>📝 审稿费记事本</h3>
                     <div class="expense-container review-fee-note">
                         <div class="expense-section">
-                            <h4>已记账月份</h4>
+                            <h4>待记账月份</h4>
                             <div id="review-fee-processed" class="expense-note" contenteditable="true">
                                 在这里记录已记账月份...
                             </div>
                         </div>
                         <div class="expense-section">
-                            <h4>待报销月份</h4>
+                            <h4>邮件模版</h4>
                             <div id="review-fee-reimbursement" class="expense-note" contenteditable="true">
-                                在这里记录待报销月份...
+                                在这里记录模版...
                             </div>
                         </div>
                     </div>
@@ -143,11 +150,10 @@
             </div>
         </div>
         <div id="chat-container">
-            <h3>星火 AI 助手</h3>
+            <button id="close-chat">×</button>
             <div id="chat-messages"></div>
             <div id="chat-input-area">
-                <input type="text" id="user-input" placeholder="输入您的问题...">
-                <button id="send-message">发送</button>
+                <input type="text" id="user-input" placeholder="按回车发送消息...">
             </div>
         </div>
     </main>

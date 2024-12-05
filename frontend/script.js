@@ -671,46 +671,58 @@ function openFolder() {
 function initAIChat() {
     const chatMessages = document.getElementById('chat-messages');
     const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-message');
+    const chatContainer = document.getElementById('chat-container');
+    const closeButton = document.getElementById('close-chat');
+    const floatingButton = document.createElement('div');
+    
+    floatingButton.className = 'floating-ai-button';
+    floatingButton.innerHTML = '🤖';
+    floatingButton.style.display = 'none';
+    document.body.appendChild(floatingButton);
 
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
+    // 初始化时显示浮动按钮，隐藏聊天窗口
+    chatContainer.style.display = 'none';
+    floatingButton.style.display = 'flex';
+
+    closeButton.addEventListener('click', () => {
+        chatContainer.style.display = 'none';
+        floatingButton.style.display = 'flex';
     });
 
-    function sendMessage() {
-        const message = userInput.value.trim();
-        if (message) {
-            addMessage('user', message);
-            userInput.value = '';
+    floatingButton.addEventListener('click', () => {
+        chatContainer.style.display = 'block';
+        floatingButton.style.display = 'none';
+    });
 
-            fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: message }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.response) {
-                    const formattedResponse = formatResponse(data.response);
-                    addMessage('ai', formattedResponse);
-                } else if (data.error) {
-                    addMessage('error', '错误: ' + data.error);
-                }
-            })
-            .catch(error => {
-                addMessage('error', '发生错误: ' + error.message);
-            });
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const message = this.value.trim();
+            if (message) {
+                addMessage('user', message);
+                this.value = '';
+                
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.response) {
+                        const formattedResponse = marked.parse(data.response);
+                        addMessage('ai', formattedResponse);
+                    } else if (data.error) {
+                        addMessage('error', '错误: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    addMessage('error', '发生错误: ' + error.message);
+                });
+            }
         }
-    }
-
-    function formatResponse(response) {
-        return marked.parse(response);
-    }
+    });
 
     function addMessage(sender, content) {
         const messageElement = document.createElement('div');

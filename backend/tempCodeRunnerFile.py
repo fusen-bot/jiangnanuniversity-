@@ -78,7 +78,7 @@ def process_review():
         if isinstance(result, list) and result:
             # 将结果保存为 Excel 文件
             df = pd.DataFrame(result)
-            output_file = os.path.join(OUTPUT_PATH, f'审稿费用统计_{target_month}.xlsx')
+            output_file = os.path.join(OUTPUT_PATH, f'processed_review_{target_month}.xlsx')
             
             # 确保输出目录存在
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
