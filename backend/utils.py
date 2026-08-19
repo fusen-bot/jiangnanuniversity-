@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 def read_excel(data):
@@ -51,7 +53,7 @@ def check_id_card_column(df, column_name='审稿人身份证号'):
     }
 
 def is_internal(unit, address):
-    keywords = ['江南大学', '蠡湖大道', '1800号']
+    keywords = [keyword.strip() for keyword in os.getenv('INTERNAL_KEYWORDS', '').split(',') if keyword.strip()]
     return any(keyword in str(unit) or keyword in str(address) for keyword in keywords)
 
 def match_employee_info(name, employee_df, retired_df):

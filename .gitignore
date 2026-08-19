@@ -23,3 +23,27 @@ venv/
 journal_articles.db
 # 日志目录
 logs/
+
+# Enterprise platform build/runtime
+server/.venv/
+server/.pytest_cache/
+server/.coverage
+server/htmlcov/
+server/journal_finance.db
+server/storage/
+web/node_modules/
+web/dist/
+web/coverage/
+web/*.tsbuildinfo
+web/vite.config.js
+web/vite.config.d.ts
+.env.enterprise
+.playwright-cli/
+.learnings/
+
+# Never commit real journal, personnel, invoice, or finance source data
+private_data/
+raw_data/
+legacy_source/
+*.sqlite
+*.sqlite3

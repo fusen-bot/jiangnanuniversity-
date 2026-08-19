@@ -1,108 +1,99 @@
-# 编辑部财务统计管理系统
+# 期刊财务智能运营平台
 
-## 项目功能
+面向单个学术期刊编辑部的企业级作品集应用。系统将审稿费、版面费和作者稿费从分散的 Excel/脚本操作，重构为可校验、可复核、可审批、可审计的统一流程。
 
-1. 审稿费登记表处理
-   - 评审表处理
-   - 复审表处理
-   - 校内外专家费用统计
-   - 工号匹配和人员状态识别
+> 本仓库只包含模拟和脱敏数据，不代表真实单位生产上线。原 Flask 原型保留在 `backend/` 与 `frontend/`，新版位于 `server/` 与 `web/`。
 
-2. 版面费管理
-   - 版面费数据展示和筛选
-   - 状态更新（录用、发票）
+## 业务闭环
 
-3. 作者稿费结算
-   - 稿费爬虫（抓取指定年份和期数的文章信息）
-   - 稿费记事本（待处理记账期数、待报销期数）
+`数据导入 → 规则校验 → 异常复核 → 审批/驳回 → 报表导出 → 审计归档`
 
-4. 审稿专家费统计
-   - 按月份处理评审和复审数据
-   - 审稿费记事本（已记账月份、待报销月份）
-
-5. 搜索功能
-   - 职工查询（按姓名或工号）
-   - 审稿查询（按稿件编号或审稿人）
-
-6. Todo List
-   - 添加、编辑、删除任务
-   - 标记任务完成状态
-   - 任务星标功能
-
-7. 快捷操作
-   - 打开工作文件夹
-
-8. 固定费用记录
-   - 审稿特约费用记录
-   - 学生助理费用记录
-
-9. AI 聊天助手
-   - 基于星火 API 的智能对话功能
-
-## 更新记录
-
-### 版本 1.1.0 (2024-xx-xx)
-
-- 添加了 AI 聊天助手功能
-- 优化了版面费管理模块
-- 改进了稿费爬虫功能
-- 增强了用户界面交互体验
-
-### 版本 1.0.0 (2023-xx-xx)
-
-- 初始版本发布
-- 实现了基本的审稿费管理功能
-- 添加了版面费管理模块
-- 集成了稿费爬虫功能
-- 实现了搜索和查询功能
-- 添加了Todo List功能
-- 实现了快捷操作和固定费用记录功能
+- 审稿费：人员匹配、校内外识别、费用计算、缺失和重复检查。
+- 版面费：录用、开票、核销、税务信息和进度管理。
+- 作者稿费：期刊数据采集、PDF通信作者提取、资格与金额计算。
+- 企业协作：四角色RBAC、任务中心、流程评论、文件中心和审计记录。
+- AI副驾：DeepSeek + 制度检索 + 授权业务摘要 + 受控工具调用 + 人工确认。
 
 ## 技术栈
 
-- 前端：HTML, CSS, JavaScript
-- 后端：Python, Flask
-- 数据处理：Pandas, Openpyxl
-- 数据库：SQLite（用于稿费爬虫数据存储）
-- AI 对话：星火 API
+- React、TypeScript、Vite、Ant Design
+- FastAPI、Pydantic、SQLAlchemy、Alembic
+- PostgreSQL、Celery、Redis
+- DeepSeek API；无密钥时使用确定性 Fake AI 完整体验流程
+- Docker Compose、GitHub Actions、pytest、Vitest、Ruff、mypy
 
-## 安装和运行
+## 一键启动
 
-1. 克隆项目仓库
-2. 安装依赖：`pip install -r requirements.txt`
-3. 运行后端服务器：`python backend/main.py`
-4. 在浏览器中访问：`http://localhost:5005`
+要求 Docker 与 Docker Compose：
 
-## 常用命令
+```bash
+cp .env.enterprise.example .env
+docker compose up --build
+```
 
-- `kill -9`: 强制终止进程
-- `lsof -i :5005`: 查看占用 5005 端口的进程
+打开 <http://localhost:8080>。第一次启动会执行数据库迁移并写入脱敏演示数据。
 
-## 项目结构
+| 角色 | 账号 | 演示密码 |
+|---|---|---|
+| 管理员 | `admin` | `Admin123!` |
+| 财务经办人 | `operator` | `Operator123!` |
+| 审批人 | `approver` | `Approver123!` |
+| 只读人员 | `viewer` | `Viewer123!` |
 
-- `frontend/`: 前端文件
-  - `index.html`: 主页面
-  - `styles.css`: 样式文件
-  - `script.js`: 前端脚本
-- `backend/`: 后端文件
-  - `main.py`: 主应用程序
-  - `data_processing.py`: 数据处理模块
-  - `database.py`: 数据库操作
-  - `webpq.py`: 稿费爬虫模块
-  - `spark_chat_interactive.py`: AI 聊天模块
-- `data/`: 数据文件
-- `output/`: 输出文件
+演示密码只用于本地作品集，生产部署必须删除或修改种子账号，并设置随机的 `JFP_SECRET_KEY`、数据库密码和 HTTPS。
 
-## 注意事项
+## 本地开发
 
-- 确保正确配置了所有必要的文件路径
-- 使用前请仔细阅读使用说明
-- 定期备份重要数据
+后端：
 
-## 贡献
+```bash
+cd server
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev]'
+alembic upgrade head
+python -m app.seed
+uvicorn app.main:app --reload
+```
 
-欢迎提交问题报告和改进建议。如果您想为项目做出贡献，请遵循标准的 Git 工作流程。
+前端：
 
-## 许可证
+```bash
+cd web
+npm install
+npm run dev
+```
 
-本项目采用 MIT 许可证。详情请参阅 LICENSE 文件。
+API 文档位于 <http://localhost:8000/docs>。关键配置均使用 `JFP_` 前缀环境变量。
+
+## 质量检查
+
+```bash
+cd server && ruff check . && mypy app && pytest
+cd web && npm run lint && npm test && npm run build
+docker compose config
+```
+
+测试覆盖状态机、费用规则、异常复核、密码与脱敏、RBAC/CSRF、AI注入拒绝及知识引用。核心领域与安全服务覆盖率门槛为 80%。
+
+## 文档导航
+
+- [架构与设计决策](DESIGN.md)
+- [数据模型](docs/DATA_MODEL.md)
+- [API与权限](docs/API_AND_PERMISSIONS.md)
+- [AI工程](docs/AI_ENGINEERING.md)
+- [安全设计](docs/SECURITY.md)
+- [部署与运维](docs/OPERATIONS.md)
+- [旧版迁移映射](docs/LEGACY_MIGRATION.md)
+- [历史资料接入与隐私边界](docs/REAL_DATA_INTEGRATION.md)
+
+## 已知边界
+
+- 当前是单机构模块化单体，不实现多租户和微服务。
+- 期刊网站结构各异，`JournalGateway` 是受控适配层，需要按目标站公开接口/DOM配置解析规则。
+- 知识检索使用透明的关键词召回，当前数据规模无需引入向量数据库；当制度文档规模和评测结果证明有必要时再升级混合检索。
+- AI 无权直接修改财务记录或审批，只能提供引用充分的建议和待确认任务。
+
+## License
+
+MIT
