@@ -85,7 +85,7 @@ def is_internal(unit, address):
     """
     判断审稿人是否为校内人员
     """
-    keywords = ['江南大学', '蠡湖大道', '1800号']
+    keywords = [keyword.strip() for keyword in os.getenv('INTERNAL_KEYWORDS', '').split(',') if keyword.strip()]
     return any(keyword in str(unit) or keyword in str(address) for keyword in keywords)
 
 def match_employee_id(name, employee_df):

@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: journal_finance
+      POSTGRES_USER: journal_finance
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-postgres-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U journal_finance"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build: ./server
+    command: ["sh", "-c", "alembic upgrade head && python -m app.seed"]
+    environment: &server_env
+      JFP_ENVIRONMENT: development
+      JFP_SECRET_KEY: ${JFP_SECRET_KEY:-local-development-secret-change-before-production}
+      JFP_DATABASE_URL: postgresql+psycopg://journal_finance:${POSTGRES_PASSWORD:-local-postgres-password}@postgres:5432/journal_finance
+      JFP_REDIS_URL: redis://redis:6379/0
+      JFP_STORAGE_DIR: /app/storage
+      JFP_DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      JFP_USE_FAKE_AI: ${JFP_USE_FAKE_AI:-true}
+      JFP_JOURNAL_BASE_URL: ${JOURNAL_BASE_URL:-https://journal.example.invalid}
+    volumes:
+      - file_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build: ./server
+    environment: *server_env
+    volumes:
+      - file_storage:/app/storage
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    build: ./server
+    command: ["celery", "-A", "app.celery_app:celery_app", "worker", "--loglevel=INFO", "--concurrency=2"]
+    environment: *server_env
+    volumes:
+      - file_storage:/app/storage
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  file_storage:

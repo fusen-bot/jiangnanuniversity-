@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # 配置
-BASE_URL = "http://spyswjs.cnjournals.com"
+BASE_URL = os.getenv('JOURNAL_BASE_URL', 'https://journal.example.invalid')
 BROWSER_ISSUE_URL = f"{BASE_URL}/spyswjs/issue/browser"
 DOWNLOAD_DIR = "downloads"
 PROCESSED_DIR = "processed"
@@ -117,7 +117,11 @@ def get_article_details(article_id):
             authors = author_data.get('authors', [])
             logger.info(f"解析到的作者数量: {len(authors)}")
             
-            is_internal = any("江南大学" in author.get('cn_institution', '') for author in authors)
+            keywords = [keyword.strip() for keyword in os.getenv('INTERNAL_KEYWORDS', '').split(',') if keyword.strip()]
+            is_internal = any(
+                any(keyword in author.get('cn_institution', '') for keyword in keywords)
+                for author in authors
+            )
             
             if authors:
                 main_author = authors[0]  # 使用第一个作者作为主要作者
